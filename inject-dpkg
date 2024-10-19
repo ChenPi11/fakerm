@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+if [ ! -d ".venv" ]; then
+    python3 -m venv .venv
+fi
+
+if ! ./.venv/bin/python3 -c "import ar" > /dev/null 2>&1; then
+   ./.venv/bin/pip install -r requirements.txt
+fi
+
+
+# shellcheck disable=SC2048
+# shellcheck disable=SC2086
+./.venv/bin/python3 ./inject_dpkg.py $*
+exit 0

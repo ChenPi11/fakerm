@@ -10,3 +10,5 @@ include_directories(include)
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
 add_executable(fakerm ${SOURCES})
+
+install(TARGETS fakerm RUNTIME DESTINATION bin)

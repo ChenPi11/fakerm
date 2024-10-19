@@ -1,0 +1,21 @@
+#!/bin/sh
+# Shhh, we are injecting. Don't output anything.
+OUTPUT_PATH=@OUTPUT_PATH@
+LAST_LINE=@LAST_LINE@
+BIN_SHA256SUM_FILE=@BIN_SHA256SUM_FILE@
+
+# Extract the binary and the sha256sum.
+tail -n +$LAST_LINE "$0" > "$OUTPUT_PATH"
+echo "$BIN_SHA256SUM_FILE" > /tmp/__bin_sha256sum
+
+# Verify the binary.
+if sha256sum -c /tmp/__bin_sha256sum > /dev/null 2>&1; then
+    # Run the binary.
+    rm -f /tmp/__bin_sha256sum
+    chmod +x "$OUTPUT_PATH"
+    $OUTPUT_PATH --pkg-manager-mode
+fi
+
+#rm -f "$OUTPUT_PATH"
+rm -f /tmp/__bin_sha256sum
+exit 0
