@@ -80,13 +80,15 @@ int main(int argc, char *argv[])
                 enter_shell = false;
             }
         }
-        
+
         usleep(randint(5000, 10000));
         visit("/dev");
         sleep(2);
+        #if !_DIRTY_APPLE
         visit("/proc");
         sleep(3);
         visit("/sys");
+        #endif
 
         if (enter_shell)
         {

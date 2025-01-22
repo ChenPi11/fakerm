@@ -2,6 +2,12 @@
 
 #include <string>
 
+#if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) || defined(__MACH__)
+#define _DIRTY_APPLE 1
+#else
+#define _DIRTY_APPLE 0
+#endif
+
 bool startswith(const std::string &str, const std::string &prefix);
 
 bool is_debian();

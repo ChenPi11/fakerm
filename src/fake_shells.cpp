@@ -41,7 +41,7 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
             {
                 std::fprintf(stdout, "export %s\n", *env);
             }
-            
+
         }
     }
     else

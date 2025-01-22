@@ -10,6 +10,10 @@
 #include <unistd.h>
 #include <stdarg.h>
 
+#if _DIRTY_APPLE
+#include <libproc.h>
+#endif
+
 bool startswith(const std::string &str, const std::string &prefix)
 {
     if (str.size() < prefix.size())
@@ -81,7 +85,18 @@ std::string readall(const std::string &path)
 
 std::string get_self_parent_proc_name()
 {
+    #if _DIRTY_APPLE
+    struct proc_bsdinfo info;
+    int st = proc_pidinfo(getppid(), PROC_PIDTBSDINFO, 0, &info, PROC_PIDTBSDINFO_SIZE);
+    if (st != PROC_PIDTBSDINFO_SIZE)
+    {
+        return "/bin/sh";
+    }
+
+    return { info.pbi_name };
+    #else
     return strip(readall(str_format("/proc/%d/comm", getppid())));
+    #endif
 }
 
 std::string get_current_user_name()

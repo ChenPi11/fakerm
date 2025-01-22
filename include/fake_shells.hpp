@@ -2,6 +2,11 @@
 
 #include <string>
 
+#if defined(macintosh) || defined(Macintosh) || defined(__APPLE__) || defined(__MACH__)
+#include <crt_externs.h>
+#define environ (*_NSGetEnviron())
+#endif
+
 enum ShellType
 {
     SHELLTYPE_UNKNOWN,
