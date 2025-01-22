@@ -296,3 +296,5 @@ fabric.properties
 \#*#
 .vscode/
 .cache/
+.zig-cache
+zig-out/bin
