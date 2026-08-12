@@ -1,6 +1,7 @@
 #include "fake_shells.hpp"
 #include "utils.hpp"
 
+#include <clocale>
 #include <csignal>
 #include <cstring>
 #include <ctime>
@@ -8,11 +9,16 @@
 #include <system_error>
 #include <unistd.h>
 
-static void visit(const std::string dir)
+static void visit(const std::string &dir)
 {
     DIR *d;
     struct dirent *dir_info;
     std::string path;
+
+    if (opendir(dir.c_str()) == NULL)
+    {
+        return;
+    }
 
     if ((d = opendir(dir.c_str())) != NULL)
     {
@@ -71,6 +77,7 @@ int main(int argc, char *argv[])
     bool enter_shell = true;
     std::srand((unsigned int)std::time(NULL));
     std::signal(SIGINT, sig_handler);
+    std::setlocale(LC_ALL, "");
     try
     {
         if (argc > 1)
@@ -84,11 +91,11 @@ int main(int argc, char *argv[])
         usleep(randint(5000, 10000));
         visit("/dev");
         sleep(2);
-        #if !_DIRTY_APPLE
+#if !_DIRTY_APPLE
         visit("/proc");
         sleep(3);
         visit("/sys");
-        #endif
+#endif
 
         if (enter_shell)
         {

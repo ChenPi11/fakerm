@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+# This file is part of fakerm.
+# ruff: noqa: CPY001
 
 """Build fakerm."""
 from __future__ import annotations

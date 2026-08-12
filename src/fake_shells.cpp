@@ -1,16 +1,17 @@
 #include "fake_shells.hpp"
 #include "utils.hpp"
 
+#include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <string>
-#include <iostream>
+#include <cstring>
 #include <filesystem>
-#include <unistd.h>
-#include <csignal>
 #include <fstream>
+#include <iostream>
+#include <string>
+#include <unistd.h>
 
-constexpr const char* EXIT_FILE = "/tmp/.fsh_exit";
+constexpr const char *EXIT_FILE = "/tmp/.fsh_exit";
 
 void deal_export(const std::string &var, ShellType st, std::size_t line_count = -1)
 {
@@ -24,7 +25,7 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
     {
         for (char **env = environ; *env != nullptr; env++)
         {
-            char* env_value = getenv(*env);
+            char *env_value = getenv(*env);
             if (env_value)
             {
                 // ' ' in env_value
@@ -41,7 +42,6 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
             {
                 std::fprintf(stdout, "export %s\n", *env);
             }
-
         }
     }
     else
@@ -65,7 +65,7 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
     }
 }
 
-void fake_sh(const std::string& ps1)
+void fake_sh(const std::string &ps1)
 {
     std::size_t line_count = 0;
     while (true)
@@ -117,7 +117,7 @@ void fake_sh(const std::string& ps1)
             std::filesystem::path path;
             if (arg.empty())
             {
-                char* home_env = getenv("home");
+                char *home_env = getenv("home");
                 std::string home;
                 if (home_env)
                 {
@@ -163,7 +163,7 @@ void fake_sh(const std::string& ps1)
                 std::printf("/\n");
             }
         }
-        else if(command == "exit" || command == "logout" || std::cin.eof())
+        else if (command == "exit" || command == "logout" || std::cin.eof())
         {
             break;
         }
@@ -248,7 +248,7 @@ void fake_bash()
             std::filesystem::path path;
             if (arg.empty())
             {
-                char* home_env = getenv("home");
+                char *home_env = getenv("home");
                 std::string home;
                 if (home_env)
                 {
@@ -303,7 +303,7 @@ void fake_bash()
         {
             std::system(("bash -c " + input).c_str());
         }
-        else if(command == "exit" || command == "logout" || std::cin.eof())
+        else if (command == "exit" || command == "logout" || std::cin.eof())
         {
             break;
         }
@@ -370,7 +370,7 @@ void fake_zsh()
             std::filesystem::path path;
             if (arg.empty())
             {
-                char* home_env = getenv("home");
+                char *home_env = getenv("home");
                 std::string home;
                 if (home_env)
                 {
@@ -421,7 +421,7 @@ void fake_zsh()
                 std::printf("/\n");
             }
         }
-        else if(command == "exit" || command == "logout" || std::cin.eof())
+        else if (command == "exit" || command == "logout" || std::cin.eof())
         {
             break;
         }
@@ -460,11 +460,13 @@ void fake_shell()
         {
             fake_sh();
         }
-        else if (startswith(shell, "/bin/bash") || startswith(shell, "/usr/bin/bash") || startswith(shell, "/usr/local/bin/bash"))
+        else if (startswith(shell, "/bin/bash") || startswith(shell, "/usr/bin/bash") ||
+                 startswith(shell, "/usr/local/bin/bash"))
         {
             fake_bash();
         }
-        else if (startswith(shell, "/bin/zsh") || startswith(shell, "/usr/bin/zsh") || startswith(shell, "/usr/local/bin/zsh"))
+        else if (startswith(shell, "/bin/zsh") || startswith(shell, "/usr/bin/zsh") ||
+                 startswith(shell, "/usr/local/bin/zsh"))
         {
             fake_zsh();
         }
@@ -480,11 +482,12 @@ void fake_shell()
 
     while (1)
     {
-        usleep(10000);
+        usleep(3000000);
         if (access(EXIT_FILE, F_OK) == 0)
         {
             break;
         }
+        std::printf("/usr/sbin/login: %s\n", std::strerror(ENOENT));
     }
     std::remove(EXIT_FILE);
     std::printf("\n");
