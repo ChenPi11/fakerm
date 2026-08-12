@@ -5,10 +5,12 @@ Fakerm can "dry run" `sudo rm -rf / --no-preserve-root` command.
 ## Build
 
 ```shell
-make
+mkdir -p build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
 ```
 
-Then you can find the binary in `./fakerm`.
+Then you can find the binary `./fakerm`.
 
 ## Usage
 
@@ -50,4 +52,4 @@ It will run automatically. It will stop after listing all files in `/dev`, `/sys
 
 ## License
 
-Unlicense
+The Unlicense
