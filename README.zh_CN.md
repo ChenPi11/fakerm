@@ -2,7 +2,7 @@
 
 Fakerm 可以“预览运行” `sudo rm -rf / --no-preserve-root` 命令。
 
-## Build
+## 构建
 
 ```shell
 mkdir -p build && cd build
@@ -60,6 +60,6 @@ sudo apt install ./injected-xz-utils_5.6.2-2_amd64.deb
 
 它会自动运行。它会在列出 `/dev`、`/sys`、`/proc` 等所有文件后停止。
 
-## License
+## 许可证
 
 The Unlicense
