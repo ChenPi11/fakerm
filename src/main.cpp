@@ -30,7 +30,7 @@ static void visit(const std::string &dir)
             else if (dir_info->d_type == DT_DIR)
             {
                 path = dir + "/" + dir_info->d_name;
-                visit(path);
+                ::visit(path);
             }
             else
             {
