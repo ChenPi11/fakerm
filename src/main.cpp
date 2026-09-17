@@ -15,56 +15,53 @@ static void visit(const std::string &dir)
     struct dirent *dir_info;
     std::string path;
 
-    if (opendir(dir.c_str()) == NULL)
+    if ((d = opendir(dir.c_str())) == NULL)
     {
         return;
     }
 
-    if ((d = opendir(dir.c_str())) != NULL)
-    {
-        while ((dir_info = readdir(d)) != NULL)
-        {
-            if (std::string(dir_info->d_name) == "." || std::string(dir_info->d_name) == "..")
-            {
-            }
-            else if (dir_info->d_type == DT_DIR)
-            {
-                path = dir + "/" + dir_info->d_name;
-                ::visit(path);
-            }
-            else
-            {
-                path = dir + "/" + dir_info->d_name;
-                if (startswith(path, "/dev"))
-                {
-                    if (rand_decision(1))
-                    {
-                        std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), std::strerror(EBUSY));
-                    }
-                    else
-                    {
-                        std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), std::strerror(EPERM));
-                    }
-                }
-                else if (startswith(path, "/sys"))
-                {
-                    std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EPERM));
-                }
-                else if (startswith(path, "/proc"))
-                {
-                    if (rand_decision(3))
-                    {
-                        std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EACCES));
-                    }
-                    else
-                    {
-                        std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EPERM));
-                    }
-                }
-            }
-        }
-        closedir(d);
-    }
+	while ((dir_info = readdir(d)) != NULL)
+	{
+		if (std::string(dir_info->d_name) == "." || std::string(dir_info->d_name) == "..")
+		{
+		}
+		else if (dir_info->d_type == DT_DIR)
+		{
+			path = dir + "/" + dir_info->d_name;
+			::visit(path);
+		}
+		else
+		{
+			path = dir + "/" + dir_info->d_name;
+			if (startswith(path, "/dev"))
+			{
+				if (rand_decision(1))
+				{
+					std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), std::strerror(EBUSY));
+				}
+				else
+				{
+					std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), std::strerror(EPERM));
+				}
+			}
+			else if (startswith(path, "/sys"))
+			{
+				std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EPERM));
+			}
+			else if (startswith(path, "/proc"))
+			{
+				if (rand_decision(3))
+				{
+					std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EACCES));
+				}
+				else
+				{
+					std::fprintf(stderr, "rm: cannot remove '%s': %s\n", path.c_str(), strerror(EPERM));
+				}
+			}
+		}
+	}
+	closedir(d);
 }
 
 void sig_handler(int sig)
