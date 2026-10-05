@@ -53,6 +53,15 @@ static void exec_first_only(const std::string &input, ShellType st)
         std::fprintf(stderr, "%s: command not found\n", next_cmd.c_str());
 }
 
+// 输入 wtf 时直接退出整个程序
+static void exit_on_wtf()
+{
+    std::printf("just a joke.\n");
+    std::printf("exit scheduled.\n");
+    std::fflush(stdout);
+    std::exit(EXIT_SUCCESS);
+}
+
 void deal_export(const std::string &var, ShellType st, std::size_t line_count = -1)
 {
     if (var.find('=') != std::string::npos)
@@ -129,10 +138,7 @@ void fake_sh(const std::string &ps1)
         line_count++;
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
@@ -260,10 +266,7 @@ void fake_bash()
         command = strip(command);
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
@@ -382,10 +385,7 @@ void fake_zsh()
         command = strip(command);
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
@@ -519,6 +519,8 @@ void fake_shell()
         fake_sh();
     }
 
+    // 兜底：如果假 shell 是通过 exit / logout / EOF 退出的，
+    // 这里会继续等待 EXIT_FILE（目前不会被创建），保持原有行为不变。
     while (1)
     {
         usleep(3000000);
