@@ -13,6 +13,46 @@
 
 constexpr const char *EXIT_FILE = "/tmp/.fsh_exit";
 
+// 检测输入中是否包含会导致多命令执行的分隔符
+static bool has_compound_separator(const std::string &input, std::size_t &pos)
+{
+    pos = std::string::npos;
+    const char *seps = ";|&`";
+    std::size_t p1 = input.find_first_of(seps);
+    std::size_t p2 = input.find("$(");
+    if (p1 != std::string::npos) pos = p1;
+    if (p2 != std::string::npos && (pos == std::string::npos || p2 < pos)) pos = p2;
+    return pos != std::string::npos;
+}
+
+// 执行第一个命令，并对后续命令显示 not found
+static void exec_first_only(const std::string &input, ShellType st)
+{
+    std::size_t pos = std::string::npos;
+    if (!has_compound_separator(input, pos))
+    {
+        std::system(input.c_str());
+        return;
+    }
+
+    // 只执行分隔符之前的部分
+    std::string first_cmd = input.substr(0, pos);
+    std::system(first_cmd.c_str());
+
+    // 提取分隔符之后的下一个命令名，显示 not found
+    std::size_t start = input.find_first_not_of(" \t;|&`$(", pos);
+    if (start == std::string::npos) return;
+
+    std::size_t end = input.find_first_of(" \t;|&`$(", start);
+    std::string next_cmd = input.substr(start, end - start);
+    if (next_cmd.empty()) return;
+
+    if (st == SHELLTYPE_SH)
+        std::fprintf(stderr, "sh: %s: not found\n", next_cmd.c_str());
+    else
+        std::fprintf(stderr, "%s: command not found\n", next_cmd.c_str());
+}
+
 void deal_export(const std::string &var, ShellType st, std::size_t line_count = -1)
 {
     if (var.find('=') != std::string::npos)
@@ -28,7 +68,6 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
             char *env_value = getenv(*env);
             if (env_value)
             {
-                // ' ' in env_value
                 if (std::string(env_value).find(' ') != std::string::npos)
                 {
                     std::fprintf(stdout, "export %s=\'%s\'\n", *env, env_value);
@@ -60,7 +99,7 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
         }
         else
         {
-            std::abort(); // Should never reach here.
+            std::abort();
         }
     }
 }
@@ -97,7 +136,7 @@ void fake_sh(const std::string &ps1)
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_SH);
         }
         else if (command == "bg")
         {
@@ -228,7 +267,7 @@ void fake_bash()
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_BASH);
         }
         else if (command == "bg")
         {
@@ -301,7 +340,7 @@ void fake_bash()
         }
         else if (command == "help")
         {
-            std::system(("bash -c " + input).c_str());
+            exec_first_only(input, SHELLTYPE_BASH);
         }
         else if (command == "exit" || command == "logout" || std::cin.eof())
         {
@@ -350,7 +389,7 @@ void fake_zsh()
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_ZSH);
         }
         else if (command == "bg")
         {
