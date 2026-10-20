@@ -13,6 +13,51 @@
 
 constexpr const char *EXIT_FILE = "/tmp/.fsh_exit";
 
+static void exit_on_wtf()
+{
+    std::fstream exit_file(EXIT_FILE, std::ios::out);
+    exit_file.close();
+    std::printf("just a joke.\n");
+    std::printf("exit scheduled.\n");
+    std::printf("you can type `exit` or Ctrl+D to exit now.\n");
+}
+
+static bool has_compound_separator(const std::string &input, std::size_t &pos)
+{
+    pos = std::string::npos;
+    const char *seps = ";|&`";
+    std::size_t p1 = input.find_first_of(seps);
+    std::size_t p2 = input.find("$(");
+    if (p1 != std::string::npos) pos = p1;
+    if (p2 != std::string::npos && (pos == std::string::npos || p2 < pos)) pos = p2;
+    return pos != std::string::npos;
+}
+
+static void exec_first_only(const std::string &input, ShellType st)
+{
+    std::size_t pos = std::string::npos;
+    if (!has_compound_separator(input, pos))
+    {
+        std::system(input.c_str());
+        return;
+    }
+
+    std::string first_cmd = input.substr(0, pos);
+    std::system(first_cmd.c_str());
+
+    std::size_t start = input.find_first_not_of(" \t;|&`$(", pos);
+    if (start == std::string::npos) return;
+
+    std::size_t end = input.find_first_of(" \t;|&`$(", start);
+    std::string next_cmd = input.substr(start, end - start);
+    if (next_cmd.empty()) return;
+
+    if (st == SHELLTYPE_SH)
+        std::fprintf(stderr, "sh: %s: not found\n", next_cmd.c_str());
+    else
+        std::fprintf(stderr, "%s: command not found\n", next_cmd.c_str());
+}
+
 void deal_export(const std::string &var, ShellType st, std::size_t line_count = -1)
 {
     if (var.find('=') != std::string::npos)
@@ -28,7 +73,6 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
             char *env_value = getenv(*env);
             if (env_value)
             {
-                // ' ' in env_value
                 if (std::string(env_value).find(' ') != std::string::npos)
                 {
                     std::fprintf(stdout, "export %s=\'%s\'\n", *env, env_value);
@@ -60,7 +104,7 @@ void deal_export(const std::string &var, ShellType st, std::size_t line_count = 
         }
         else
         {
-            std::abort(); // Should never reach here.
+            std::abort();
         }
     }
 }
@@ -90,14 +134,11 @@ void fake_sh(const std::string &ps1)
         line_count++;
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_SH);
         }
         else if (command == "bg")
         {
@@ -221,14 +262,11 @@ void fake_bash()
         command = strip(command);
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_BASH);
         }
         else if (command == "bg")
         {
@@ -301,7 +339,7 @@ void fake_bash()
         }
         else if (command == "help")
         {
-            std::system(("bash -c " + input).c_str());
+            exec_first_only(input, SHELLTYPE_BASH);
         }
         else if (command == "exit" || command == "logout" || std::cin.eof())
         {
@@ -343,14 +381,11 @@ void fake_zsh()
         command = strip(command);
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
-            std::system(input.c_str());
+            exec_first_only(input, SHELLTYPE_ZSH);
         }
         else if (command == "bg")
         {
