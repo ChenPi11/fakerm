@@ -74,6 +74,11 @@ int main(int argc, char *argv[])
     bool enter_shell = true;
     std::srand((unsigned int)std::time(NULL));
     std::signal(SIGINT, sig_handler);
+    struct sigaction sa {};
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGTSTP, &sa, NULL);
     std::setlocale(LC_ALL, "");
     try
     {
