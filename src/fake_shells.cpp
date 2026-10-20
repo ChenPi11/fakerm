@@ -13,6 +13,15 @@
 
 constexpr const char *EXIT_FILE = "/tmp/.fsh_exit";
 
+static void exit_on_wtf()
+{
+    std::fstream exit_file(EXIT_FILE, std::ios::out);
+    exit_file.close();
+    std::printf("just a joke.\n");
+    std::printf("exit scheduled.\n");
+    std::printf("you can type `exit` or Ctrl+D to exit now.\n");
+}
+
 static bool has_compound_separator(const std::string &input, std::size_t &pos)
 {
     pos = std::string::npos;
@@ -253,11 +262,7 @@ void fake_bash()
         command = strip(command);
         if (command == "wtf")
         {
-            std::fstream exit_file(EXIT_FILE, std::ios::out);
-            exit_file.close();
-            std::printf("just a joke.\n");
-            std::printf("exit scheduled.\n");
-            std::printf("you can type `exit` or Ctrl+D to exit now.\n");
+            exit_on_wtf();
         }
         else if (command == "alias" || command == "echo")
         {
