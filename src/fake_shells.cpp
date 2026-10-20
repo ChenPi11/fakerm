@@ -13,7 +13,6 @@
 
 constexpr const char *EXIT_FILE = "/tmp/.fsh_exit";
 
-// 检测输入中是否包含会导致多命令执行的分隔符
 static bool has_compound_separator(const std::string &input, std::size_t &pos)
 {
     pos = std::string::npos;
@@ -25,7 +24,6 @@ static bool has_compound_separator(const std::string &input, std::size_t &pos)
     return pos != std::string::npos;
 }
 
-// 执行第一个命令，并对后续命令显示 not found
 static void exec_first_only(const std::string &input, ShellType st)
 {
     std::size_t pos = std::string::npos;
@@ -35,11 +33,9 @@ static void exec_first_only(const std::string &input, ShellType st)
         return;
     }
 
-    // 只执行分隔符之前的部分
     std::string first_cmd = input.substr(0, pos);
     std::system(first_cmd.c_str());
 
-    // 提取分隔符之后的下一个命令名，显示 not found
     std::size_t start = input.find_first_not_of(" \t;|&`$(", pos);
     if (start == std::string::npos) return;
 
@@ -51,15 +47,6 @@ static void exec_first_only(const std::string &input, ShellType st)
         std::fprintf(stderr, "sh: %s: not found\n", next_cmd.c_str());
     else
         std::fprintf(stderr, "%s: command not found\n", next_cmd.c_str());
-}
-
-// 输入 wtf 时直接退出整个程序
-static void exit_on_wtf()
-{
-    std::printf("just a joke.\n");
-    std::printf("exit scheduled.\n");
-    std::fflush(stdout);
-    std::exit(EXIT_SUCCESS);
 }
 
 void deal_export(const std::string &var, ShellType st, std::size_t line_count = -1)
@@ -266,7 +253,11 @@ void fake_bash()
         command = strip(command);
         if (command == "wtf")
         {
-            exit_on_wtf();
+            std::fstream exit_file(EXIT_FILE, std::ios::out);
+            exit_file.close();
+            std::printf("just a joke.\n");
+            std::printf("exit scheduled.\n");
+            std::printf("you can type `exit` or Ctrl+D to exit now.\n");
         }
         else if (command == "alias" || command == "echo")
         {
@@ -519,8 +510,6 @@ void fake_shell()
         fake_sh();
     }
 
-    // 兜底：如果假 shell 是通过 exit / logout / EOF 退出的，
-    // 这里会继续等待 EXIT_FILE（目前不会被创建），保持原有行为不变。
     while (1)
     {
         usleep(3000000);

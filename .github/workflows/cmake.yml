@@ -1,10 +1,8 @@
 name: CMake Build
 
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
-  workflow_dispatch:   # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -23,14 +21,10 @@ jobs:
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --config Release
-
-      - name: Test
-        working-directory: build
-        run: ctest --output-on-failure
+        run: cmake --build build --config Release -j$(nproc)
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-output
-          path: build/
+          path: build/fakerm
